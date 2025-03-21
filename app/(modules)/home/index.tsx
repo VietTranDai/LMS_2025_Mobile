@@ -312,7 +312,11 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {announcements.map((item) => renderAnnouncementItem({ item }))}
+          {announcements.map((item) => (
+            <React.Fragment key={item.id}>
+              {renderAnnouncementItem({ item })}
+            </React.Fragment>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>

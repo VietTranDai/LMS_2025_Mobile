@@ -37,7 +37,7 @@ function RootLayoutNavigator() {
     if (!navigationState?.key) return;
 
     const inAuthGroup = segments[0] === "auth";
-    const inOnboardingGroup = segments[0] === ("onboarding" as any);
+    const inOnboardingGroup = segments[0] === "onboarding";
 
     if (isLoading) return;
 
