@@ -71,7 +71,7 @@ Below is a detailed description of the project's directory structure:
 
 ### 8. **`constants` Directory**
 - Contains shared constants.
-- `colors.ts`: Defines color values.
+- `Colors.ts`: Defines color values.
 - `strings.ts`: Defines text strings.
 
 ### 9. **`hooks` Directory**
