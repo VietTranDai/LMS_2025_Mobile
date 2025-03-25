@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,17 +6,43 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Switch,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { removeItem } from "@/utils/asyncStorage";
 import { useUser } from "@/contexts/UserContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { debounce } from "@/utils/themeUtils";
 
 export default function MoreScreen() {
   const theme = useAppTheme();
   const { signOut } = useUser();
+  const {
+    theme: themeMode,
+    setTheme,
+    colorScheme,
+    toggleTheme,
+    isDarkMode,
+  } = useTheme();
+
+  // Refs to track switch interactions and prevent double toggles
+  const darkModeInteractingRef = useRef(false);
+  const systemThemeInteractingRef = useRef(false);
+  const lastSwitchTimeRef = useRef(0);
+
+  // Reset interaction flags after some time
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      darkModeInteractingRef.current = false;
+      systemThemeInteractingRef.current = false;
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isDarkMode, themeMode]);
 
   const resetOnboarding = async () => {
     try {
@@ -50,6 +76,111 @@ export default function MoreScreen() {
       console.error("Error signing out:", error);
     }
   };
+
+  const handleThemeChange = useCallback(
+    (value: boolean) => {
+      try {
+        // Prevent duplicate calls
+        if (darkModeInteractingRef.current) return;
+        darkModeInteractingRef.current = true;
+
+        // Check if we need to throttle
+        const now = Date.now();
+        if (now - lastSwitchTimeRef.current < 500) return;
+        lastSwitchTimeRef.current = now;
+
+        // Only proceed if all required values are valid
+        if (
+          typeof setTheme !== "function" ||
+          typeof isDarkMode === "undefined"
+        ) {
+          console.warn("Theme context not fully initialized");
+          return;
+        }
+
+        // True = dark mode, False = light mode
+        if ((value && !isDarkMode) || (!value && isDarkMode)) {
+          setTheme(value ? "dark" : "light");
+        }
+      } catch (error) {
+        console.error("Error in theme change handler:", error);
+      }
+    },
+    [isDarkMode, setTheme]
+  );
+
+  const handleSystemThemeToggle = useCallback(
+    (value: boolean) => {
+      try {
+        // Prevent duplicate calls
+        if (systemThemeInteractingRef.current) return;
+        systemThemeInteractingRef.current = true;
+
+        // Check if we need to throttle
+        const now = Date.now();
+        if (now - lastSwitchTimeRef.current < 500) return;
+        lastSwitchTimeRef.current = now;
+
+        // Only proceed if all required values are valid
+        if (
+          typeof setTheme !== "function" ||
+          typeof themeMode === "undefined" ||
+          typeof colorScheme === "undefined"
+        ) {
+          console.warn("Theme context not fully initialized");
+          return;
+        }
+
+        // Only update if there's an actual change
+        if (
+          (value && themeMode !== "system") ||
+          (!value && themeMode === "system")
+        ) {
+          if (value) {
+            setTheme("system");
+          } else {
+            // Set to current system value as explicit choice
+            setTheme(colorScheme);
+          }
+        }
+      } catch (error) {
+        console.error("Error in system theme toggle handler:", error);
+      }
+    },
+    [themeMode, colorScheme, setTheme]
+  );
+
+  // Create custom switch component to improve reliability
+  const CustomSwitch = ({
+    value,
+    onValueChange,
+    disabled,
+    tint,
+  }: {
+    value: boolean;
+    onValueChange: (value: boolean) => void;
+    disabled: boolean;
+    tint: string;
+  }) => (
+    <Pressable
+      onPress={() => {
+        if (!disabled) {
+          onValueChange(!value);
+        }
+      }}
+      style={{ padding: 5 }}
+      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+    >
+      <Switch
+        trackColor={{ false: "#767577", true: tint }}
+        thumbColor={value ? theme.primary : "#f4f3f4"}
+        ios_backgroundColor="#3e3e3e"
+        onValueChange={onValueChange}
+        value={value}
+        disabled={disabled}
+      />
+    </Pressable>
+  );
 
   return (
     <SafeAreaView
@@ -103,6 +234,48 @@ export default function MoreScreen() {
               color={theme.textTertiary}
             />
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Appearance
+          </Text>
+
+          <View style={[styles.menuItem, { backgroundColor: theme.card }]}>
+            <Feather
+              name="moon"
+              size={24}
+              color={theme.primary}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, { color: theme.text }]}>
+              Dark Mode
+            </Text>
+            <CustomSwitch
+              value={isDarkMode}
+              onValueChange={handleThemeChange}
+              disabled={themeMode === "system"}
+              tint={`${theme.primary}80`}
+            />
+          </View>
+
+          <View style={[styles.menuItem, { backgroundColor: theme.card }]}>
+            <Feather
+              name="smartphone"
+              size={24}
+              color={theme.primary}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, { color: theme.text }]}>
+              Use System Settings
+            </Text>
+            <CustomSwitch
+              value={themeMode === "system"}
+              onValueChange={handleSystemThemeToggle}
+              disabled={false}
+              tint={`${theme.primary}80`}
+            />
+          </View>
         </View>
 
         <View style={styles.section}>

@@ -19,6 +19,7 @@ import { onboardingData } from "@/modules/onboarding/data/onboardingData";
 import { OnboardingButton } from "@/modules/onboarding/components/OnboardingButton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -27,6 +28,7 @@ export default function Onboarding() {
   const slidesRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
 
   const animatedOpacity = useRef(new Animated.Value(0)).current;
 
@@ -87,7 +89,7 @@ export default function Onboarding() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
 
       <Animated.View
         style={[

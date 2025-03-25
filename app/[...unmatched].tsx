@@ -10,9 +10,12 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { useTheme } from "@/contexts/ThemeContext";
+import { StatusBar } from "expo-status-bar";
 
 export default function NotFoundScreen() {
   const theme = useAppTheme();
+  const { isDarkMode } = useTheme();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -67,6 +70,7 @@ export default function NotFoundScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
       <Animated.View
         style={[
           styles.content,

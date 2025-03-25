@@ -17,9 +17,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function AuthScreen() {
   const theme = useAppTheme();
+  const { isDarkMode } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +57,7 @@ export default function AuthScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
-      <StatusBar style="dark" />
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}

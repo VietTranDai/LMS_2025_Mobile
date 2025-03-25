@@ -1,108 +1,139 @@
-# Welcome to your Expo app 👋
+# LMS_2025_Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A Learning Management System (LMS) mobile application built with React Native and Expo.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Course browsing and enrollment
+- Lesson viewing and tracking
+- User authentication
+- Profile management
+- Push notifications
 
-   ```bash
-   npm install
-   ```
+## Getting Started
 
-2. Start the app
+### Prerequisites
 
-   ```bash
-    npx expo start
-   ```
+- Node.js (v16 or later)
+- npm or yarn
+- Expo CLI
 
-In the output, you'll find options to open the app in a
+### Installation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+1. Clone the repository:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+```bash
+git clone https://github.com/your-username/LMS_2025_Mobile.git
+cd LMS_2025_Mobile
+```
 
+2. Install dependencies:
 
-## Project Directory Structure
+```bash
+npm install
+# or
+yarn install
+```
 
-Below is a detailed description of the project's directory structure:
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following variables:
 
-### 1. **`.expo` Directory**
-- Contains configuration files and device information for Expo.
-- `devices.json`: Stores information about connected devices.
-- `README.md`: Documentation guide for the `.expo` directory.
-- `types/router.d.ts`: Type definitions for the Expo router.
+```
+API_URL=https://your-api-url.com
+API_TIMEOUT=20000
+API_VERSION=v1
+API_DEBUG=false
+```
 
-### 2. **`.git` Directory**
-- Manages version control with Git.
-- Includes files such as `config`, `hooks`, `logs`, `objects`, and `refs` to track the repository's history and status.
+4. Start the development server:
 
-### 3. **`.idea` Directory**
-- Configuration for the IntelliJ IDEA IDE.
-- Contains files like `workspace.xml`, `modules.xml`, and `LMS_2025_Mobile.iml` to support development.
+```bash
+npm start
+# or
+yarn start
+```
 
-### 4. **`app` Directory**
-- The main directory containing the application's modules and layouts.
-- `auth/index.tsx`: Component for the authentication module.
-- `home/index.tsx`: Component for the home page module.
-- `index.tsx`: Main entry point of the application.
-- `_layout.tsx`: Shared layout for screens.
+## Environment Configuration
 
-### 5. **`app-example` Directory**
-- Contains an example application structure with tabs and components.
-- `app/(tabs)`: Example screens such as `explore.tsx` and `index.tsx`.
-- `components/`: Sample components like `Collapsible.tsx`, `ThemedText.tsx`.
-- `constants/Colors.ts`: Color definitions for the example.
-- `hooks/`: Hooks such as `useColorScheme.ts` and `useThemeColor.ts`.
-- `scripts/reset-project.js`: Script to reset the project.
+The application uses a `.env` file to configure API settings with proper React Native support through `react-native-dotenv`. The following variables are supported:
 
-### 6. **`assets` Directory**
-- Contains static resources.
-- `fonts/SpaceMono-Regular.ttf`: Font used in the application.
-- `images/`: Images such as `icon.png`, `react-logo.png`, and `splash-icon.png`.
+| Variable    | Description                        | Default                 |
+| ----------- | ---------------------------------- | ----------------------- |
+| API_URL     | Base URL for API requests          | https://api.example.com |
+| API_TIMEOUT | Request timeout in milliseconds    | 20000                   |
+| API_VERSION | API version                        | v1                      |
+| API_DEBUG   | Enable debug logging for API calls | false                   |
 
-### 7. **`components` Directory**
-- Contains shared components.
-- `Avatar.tsx`: Component for displaying avatars.
-- `Button.tsx`: Button component.
+To modify these settings, edit the `.env` file in the project root.
 
-### 8. **`constants` Directory**
-- Contains shared constants.
-- `Colors.ts`: Defines color values.
-- `strings.ts`: Defines text strings.
+### How Environment Variables Work
 
-### 9. **`hooks` Directory**
-- Contains custom hooks.
-- `useNotifications.ts`: Hook for managing notifications.
+This project uses `react-native-dotenv` and `babel-plugin-transform-inline-environment-variables` to ensure proper environment variable handling:
 
-### 10. **`modules` Directory**
-- Contains functional modules such as `auth` and `home`.
-- Each module includes subdirectories like `components`, `hooks`, `services`, `store`, `utils`, and `validation`.
+- Environment variables are securely loaded at build time
+- Strong TypeScript support with type definitions in `env.d.ts`
+- Centralized configuration in `config/environment.ts`
+- Fallback default values for safety
 
-### 11. **`service` Directory**
-- Contains shared services for the application.
+When adding new environment variables:
 
-### 12. **`store` Directory**
-- Manages the application's state (may use Redux or other tools).
+1. Add them to the `.env` file
+2. Add TypeScript declarations in `env.d.ts`
+3. Import and use them through the `config/environment.ts` module
 
-### 13. **`utils` Directory**
-- Contains utility functions.
-- `formatDate.ts`: Function for formatting dates.
-- `validateEmail.ts`: Function for email validation.
+## Project Structure
 
-### 14. **Configuration Files**
-- `.env`: File containing environment variables.
-- `.gitignore`: Specifies files/directories ignored by Git.
-- `app.json`: Expo application configuration.
-- `babel.config.js`: Babel configuration.
-- `expo-env.d.ts`: Type definitions for Expo.
-- `globals.css`: Global CSS.
-- `metro.config.js`: Metro bundler configuration.
-- `nativewind-env.d.ts`: Type definitions for NativeWind.
-- `package.json`: Manages dependencies and scripts.
-- `package-lock.json`: Lock file for dependencies.
-- `tailwind.config.js`: Tailwind CSS configuration.
-- `tsconfig.json`: TypeScript configuration.
+- `app/` - Expo Router application screens
+- `components/` - Reusable UI components
+- `config/` - Configuration files
+- `constants/` - Application constants
+- `contexts/` - React contexts
+- `hooks/` - Custom React hooks
+- `modules/` - Feature modules
+- `service/` - API services
+- `store/` - State management
+- `utils/` - Utility functions
+
+## UI Components
+
+The project includes several enhanced UI components with professional animations and effects:
+
+### Button Component
+
+The `Button` component supports multiple variants and animations:
+
+- Variants: primary, secondary, outline, text, gradient, glass
+- Sizes: small, medium, large
+- Animations: scale, opacity
+- Features: haptic feedback, shadows, gradient backgrounds
+
+### Card Component
+
+The `Card` component provides a flexible container with:
+
+- Variants: elevated, outlined, filled, glass, gradient
+- Customizable headers and footers
+- Animations on press
+- Shadow effects and rounded corners
+
+## API Configuration
+
+API requests are centralized through the `apiClient` service, which:
+
+- Uses Axios for HTTP requests
+- Automatically adds authentication tokens to requests
+- Handles token expiration and logout
+- Provides optional debug logging for API calls
+- Uses environment variables for configuration
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

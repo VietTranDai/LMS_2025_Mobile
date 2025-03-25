@@ -387,10 +387,12 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   courseCard: {
-    width: 260,
+    width: 240,
     borderRadius: 12,
     overflow: "hidden",
     marginRight: 16,
+    borderWidth: 2,
+    borderColor: "#E8E8E8",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -402,22 +404,23 @@ const styles = StyleSheet.create({
     height: 130,
   },
   courseContent: {
-    padding: 12,
+    padding: 16,
+    paddingBottom: 20,
   },
   courseTitle: {
     fontSize: 16,
     fontFamily: "Inter-SemiBold",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   courseInstructor: {
     fontSize: 14,
     fontFamily: "Inter-Regular",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   progressContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   progressBarBg: {
     flex: 1,
@@ -439,6 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 4,
   },
   nextLessonLabel: {
     fontSize: 12,
