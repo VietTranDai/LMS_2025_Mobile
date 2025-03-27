@@ -1,11 +1,9 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: [
-      ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-      "nativewind/babel",
-    ],
+    presets: [["babel-preset-expo"], "nativewind/babel"],
     plugins: [
+      // React Native dotenv
       [
         "module:react-native-dotenv",
         {
@@ -17,7 +15,18 @@ module.exports = function (api) {
           allowUndefined: false,
         },
       ],
-      "transform-inline-environment-variables",
+      // Module resolver cho alias
+      [
+        "module-resolver",
+        {
+          root: ["./"],
+          alias: {
+            "@": "./",
+          },
+        },
+      ],
+      // Reanimated plugin - phải để CUỐI CÙNG để hoạt động đúng
+      "react-native-reanimated/plugin",
     ],
   };
 };

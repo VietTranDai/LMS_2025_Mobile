@@ -20,7 +20,7 @@ if (fs.existsSync(envPath)) {
   console.warn("No .env file found. Using default values.");
 }
 
-// Get default metro configuration
+// Get default metro configuration with minimal customization
 const config = getDefaultConfig(__dirname);
 
 // Export the config with NativeWind support

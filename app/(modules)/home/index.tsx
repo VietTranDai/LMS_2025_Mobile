@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     width: 240,
     borderRadius: 12,
     overflow: "hidden",
-    marginRight: 16,
+    marginRight: 8,
     borderWidth: 2,
     borderColor: "#E8E8E8",
     shadowColor: "#000",
