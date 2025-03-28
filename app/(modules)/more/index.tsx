@@ -12,21 +12,21 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useAppTheme } from "@/hooks/useAppTheme";
 import { removeItem } from "@/utils/asyncStorage";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { debounce } from "@/utils/themeUtils";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 export default function MoreScreen() {
   const theme = useAppTheme();
   const { signOut } = useUser();
   const {
-    theme: themeMode,
     setTheme,
-    colorScheme,
     toggleTheme,
     isDarkMode,
+    theme: themeMode,
+    effectiveColorScheme,
   } = useTheme();
 
   // Refs to track switch interactions and prevent double toggles
@@ -110,44 +110,18 @@ export default function MoreScreen() {
   );
 
   const handleSystemThemeToggle = useCallback(
-    (value: boolean) => {
+    (useSystemTheme: boolean) => {
       try {
-        // Prevent duplicate calls
-        if (systemThemeInteractingRef.current) return;
-        systemThemeInteractingRef.current = true;
-
-        // Check if we need to throttle
-        const now = Date.now();
-        if (now - lastSwitchTimeRef.current < 500) return;
-        lastSwitchTimeRef.current = now;
-
-        // Only proceed if all required values are valid
-        if (
-          typeof setTheme !== "function" ||
-          typeof themeMode === "undefined" ||
-          typeof colorScheme === "undefined"
-        ) {
-          console.warn("Theme context not fully initialized");
-          return;
-        }
-
-        // Only update if there's an actual change
-        if (
-          (value && themeMode !== "system") ||
-          (!value && themeMode === "system")
-        ) {
-          if (value) {
-            setTheme("system");
-          } else {
-            // Set to current system value as explicit choice
-            setTheme(colorScheme);
-          }
+        if (useSystemTheme && themeMode !== "system") {
+          setTheme("system");
+        } else if (!useSystemTheme && themeMode === "system") {
+          setTheme(effectiveColorScheme);
         }
       } catch (error) {
-        console.error("Error in system theme toggle handler:", error);
+        console.error("Error toggling system theme:", error);
       }
     },
-    [themeMode, colorScheme, setTheme]
+    [themeMode, effectiveColorScheme, setTheme]
   );
 
   // Create custom switch component to improve reliability

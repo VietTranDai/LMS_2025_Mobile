@@ -3,10 +3,11 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
   useCallback,
   useRef,
 } from "react";
-import { Appearance, ColorSchemeName, useColorScheme } from "react-native";
+import { Appearance, useColorScheme } from "react-native";
 import { getItem, setItem } from "@/utils/asyncStorage";
 import { StatusBar } from "expo-status-bar";
 import { animateThemeTransition, debounce } from "@/utils/themeUtils";
@@ -16,7 +17,7 @@ type ThemeMode = "light" | "dark" | "system";
 export interface ThemeContextType {
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
-  colorScheme: "light" | "dark";
+  effectiveColorScheme: "light" | "dark";
   toggleTheme: () => void;
   isDarkMode: boolean;
 }
@@ -24,36 +25,28 @@ export interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  // Ensure systemColorScheme is never undefined
   const deviceColorScheme = useColorScheme();
   const systemColorScheme = (
     typeof deviceColorScheme === "string" ? deviceColorScheme : "light"
   ) as "light" | "dark";
 
   const [theme, setThemeState] = useState<ThemeMode>("system");
-  const [colorScheme, setColorScheme] = useState<"light" | "dark">(
-    systemColorScheme
+  // Tính toán effectiveColorScheme dựa trên theme và systemColorScheme
+  const effectiveColorScheme = useMemo(
+    () => (theme === "system" ? systemColorScheme : theme),
+    [theme, systemColorScheme]
   );
 
-  // Prevent excessive theme updates with a ref
+  const isDarkMode = effectiveColorScheme === "dark";
   const isUpdatingRef = useRef(false);
   const lastUpdateTimeRef = useRef(0);
 
-  // Computed property to easily check if we're in dark mode
-  const isDarkMode = colorScheme === "dark";
-
-  // Load saved theme on initial mount only
+  // Load theme đã lưu khi khởi tạo
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const savedTheme = await getItem("@theme");
-        // Validate that savedTheme is a valid ThemeMode value
-        if (
-          savedTheme &&
-          (savedTheme === "light" ||
-            savedTheme === "dark" ||
-            savedTheme === "system")
-        ) {
+        const savedTheme = (await getItem("@theme")) as string;
+        if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
           setThemeState(savedTheme as ThemeMode);
         }
       } catch (error) {
@@ -64,41 +57,28 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     loadTheme();
   }, []);
 
-  // Set up appearance change listener
+  // Lắng nghe sự thay đổi của hệ thống khi theme là "system"
   useEffect(() => {
     const subscription = Appearance.addChangeListener(
       ({ colorScheme: newColorScheme }) => {
-        if (theme === "system" && typeof newColorScheme === "string") {
-          // Prevent animation if we're already updating
-          if (!isUpdatingRef.current) {
-            // Animate the transition when system theme changes
-            animateThemeTransition();
-            setColorScheme(newColorScheme as "light" | "dark");
-          }
+        if (
+          theme === "system" &&
+          typeof newColorScheme === "string" &&
+          !isUpdatingRef.current
+        ) {
+          animateThemeTransition();
+          // Khi thay đổi hệ thống, effectiveColorScheme sẽ tự động được tính lại
         }
       }
     );
-
-    return () => {
-      subscription.remove();
-    };
+    return () => subscription.remove();
   }, [theme]);
 
-  // Update color scheme immediately when theme changes
-  useEffect(() => {
-    if (theme === "system") {
-      setColorScheme(systemColorScheme);
-    } else {
-      setColorScheme(theme);
-    }
-  }, [theme, systemColorScheme]);
-
-  // Debounced save function to prevent excessive writes
+  // Debounced save function để tránh ghi quá nhiều
   const saveThemePreference = useCallback(
     debounce(async (newTheme: ThemeMode) => {
       try {
         await setItem("@theme", newTheme);
-        // Reset update lock after save is complete
         isUpdatingRef.current = false;
       } catch (error) {
         console.error("Failed to save theme preference:", error);
@@ -108,54 +88,38 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     []
   );
 
-  // Optimized setTheme function with animation
+  // Hàm setTheme có animation và throttle
   const setTheme = useCallback(
     (newTheme: ThemeMode) => {
-      // Validate the newTheme value
-      if (
-        typeof newTheme !== "string" ||
-        !["light", "dark", "system"].includes(newTheme)
-      ) {
+      if (!["light", "dark", "system"].includes(newTheme)) {
         console.error("Invalid theme value:", newTheme);
         return;
       }
 
       const now = Date.now();
-      // Prevent rapid theme changes - only allow if more than 700ms since last change
       if (isUpdatingRef.current && now - lastUpdateTimeRef.current < 700) {
         console.log("Throttling theme change - too soon");
         return;
       }
 
-      // Only change if theme is actually different
       if (newTheme !== theme) {
-        // Mark as updating
         isUpdatingRef.current = true;
         lastUpdateTimeRef.current = now;
-
-        // Animate the transition
         animateThemeTransition();
-
-        // Update state immediately for responsive UI
         setThemeState(newTheme);
-
-        // Save preference in the background with debounce
         saveThemePreference(newTheme);
       }
     },
     [theme, saveThemePreference]
   );
 
-  // Optimized toggle function
+  // Hàm toggleTheme để chuyển đổi theme
   const toggleTheme = useCallback(() => {
-    // Don't allow toggle if we're already updating
-    if (isUpdatingRef.current) {
-      return;
-    }
+    if (isUpdatingRef.current) return;
 
     const newTheme =
       theme === "system"
-        ? colorScheme === "dark"
+        ? effectiveColorScheme === "dark"
           ? "light"
           : "dark"
         : theme === "dark"
@@ -163,12 +127,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         : "dark";
 
     setTheme(newTheme);
-  }, [theme, colorScheme, setTheme]);
+  }, [theme, effectiveColorScheme, setTheme]);
 
-  // Cleanup effect
   useEffect(() => {
     return () => {
-      // Clean up any pending debounced operations
       if (typeof (saveThemePreference as any).cancel === "function") {
         (saveThemePreference as any).cancel();
       }
@@ -178,7 +140,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const contextValue = {
     theme,
     setTheme,
-    colorScheme,
+    effectiveColorScheme,
     toggleTheme,
     isDarkMode,
   };
